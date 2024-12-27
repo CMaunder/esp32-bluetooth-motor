@@ -1,8 +1,18 @@
 set(srcs
         "main.c"
-        "sketch.cpp")
+        "sketch.cpp"
+        "motor.cpp"
+    )
 
-set(requires "bluepad32" "bluepad32_arduino" "arduino" "btstack" "Adafruit_SSD1306" "Adafruit-GFX-Library" "Adafruit_BusIO")
+set(requires 
+        "bluepad32" 
+        "bluepad32_arduino" 
+        "arduino" 
+        "btstack" 
+        "Adafruit_SSD1306" 
+        "Adafruit-GFX-Library" 
+        "Adafruit_BusIO"
+    )
 
 idf_component_register(SRCS "${srcs}"
                     INCLUDE_DIRS "."

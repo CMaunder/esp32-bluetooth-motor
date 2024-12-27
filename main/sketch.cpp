@@ -1,22 +1,6 @@
 #include "sdkconfig.h"
-
 #include <Arduino.h>
 #include <Bluepad32.h>
-
-//
-// README FIRST, README FIRST, README FIRST
-//
-// Bluepad32 has a built-in interactive console.
-// By default, it is enabled (hey, this is a great feature!).
-// But it is incompatible with Arduino "Serial" class.
-//
-// Instead of using, "Serial" you can use Bluepad32 "Console" class instead.
-// It is somewhat similar to Serial but not exactly the same.
-//
-// Should you want to still use "Serial", you have to disable the Bluepad32's console
-// from "sdkconfig.defaults" with:
-//    CONFIG_BLUEPAD32_USB_CONSOLE_ENABLE=n
-
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Wire.h>
@@ -24,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include "sketch.h"
+#include "motor.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -32,22 +17,6 @@
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 ControllerPtr myControllers[BP32_MAX_GAMEPADS];
-
-const int MOTOR_1_PIN_1 {27};
-const int MOTOR_1_PIN_2 {26};
-const int MOTOR_1_ENABLE {14};
-
-const int MOTOR_2_PIN_1 {33};
-const int MOTOR_2_PIN_2 {32};
-const int MOTOR_2_ENABLE {25};
-
-// PWM properties
-const int PWM_FREQ {500};
-const int PWM_CHANNEL_0 {0};
-const int PWM_CHANNEL_1 {1};
-const int PWM_RESOLUTION {8};
-int dutyCycle {0};
-
 
 void displayGamepad(ControllerPtr ctl) {
     double axis_to_percent {5.12};
@@ -119,7 +88,7 @@ void onConnectedController(ControllerPtr ctl) {
         }
     }
     if (!foundEmptySlot) {
-        Console.println("CALLBACK: Controller connected, but could not found empty slot");
+        Console.println("CALLBACK: Controller connected, but could not find empty slot");
     }
 }
 
@@ -318,7 +287,6 @@ void processKeyboard(ControllerPtr ctl) {
         // Do something else
         Console.println("Key 'Left Arrow' pressed");
     }
-
     // See "dumpKeyboard" for possible things to query.
     dumpKeyboard(ctl);
 }
@@ -328,7 +296,6 @@ void processBalanceBoard(ControllerPtr ctl) {
     if (ctl->topLeft() > 10000) {
         // Do Something
     }
-
     // See "dumpBalanceBoard" for possible things to query.
     dumpBalanceBoard(ctl);
 }
@@ -361,7 +328,7 @@ void setup() {
     pinMode(MOTOR_1_ENABLE, OUTPUT);
     ledcAttachChannel(MOTOR_1_ENABLE, PWM_FREQ, PWM_RESOLUTION, PWM_CHANNEL_0);
 
-    // Motor Setup -2
+    // Motor Setup - 2
     pinMode(MOTOR_2_PIN_1, OUTPUT);
     pinMode(MOTOR_2_PIN_2, OUTPUT);
     pinMode(MOTOR_2_ENABLE, OUTPUT);
@@ -374,14 +341,14 @@ void setup() {
     delay(2000);
     display.clearDisplay();
 
-    display.setTextSize(2);
+    display.setTextSize(1);
     display.setTextColor(WHITE);
     display.setCursor(0, 10);
     // Display static text
     display.println("Connect Controller...");
     display.display();
 
-    // motorControlTest();
+    motorControlTest();
 
     Console.printf("Firmware: %s\n", BP32.firmwareVersion());
     const uint8_t* addr = BP32.localBdAddress();
@@ -395,7 +362,7 @@ void setup() {
     // Calling "forgetBluetoothKeys" in setup() just as an example.
     // Forgetting Bluetooth keys prevents "paired" gamepads to reconnect.
     // But it might also fix some connection / re-connection issues.
-    BP32.forgetBluetoothKeys();
+    // BP32.forgetBluetoothKeys();
 
     // Enables mouse / touchpad support for gamepads that support them.
     // When enabled, controllers like DualSense and DualShock4 generate two connected devices:
@@ -409,90 +376,6 @@ void setup() {
     // By default, it is disabled.
     BP32.enableBLEService(false);
 }
-
-void motorControlTest() {
-    // Motor 1 test
-    digitalWrite(MOTOR_1_PIN_1, HIGH);
-    digitalWrite(MOTOR_1_PIN_2, LOW);
-
-    for (int i = 0; i < 150; i++) {
-        ledcWrite(MOTOR_1_ENABLE, i);
-
-        display.clearDisplay();
-        display.setTextSize(1);
-        display.setTextColor(WHITE);
-        display.setCursor(0, 10);
-        display.println("Motor 1: ");
-        display.setTextSize(2);
-        display.println(i);
-        display.display();
-        delay(20);
-    }
-    digitalWrite(MOTOR_1_PIN_1, LOW);
-    digitalWrite(MOTOR_1_PIN_2, HIGH);
-
-    for (int i = 0; i < 150; i++) {
-        ledcWrite(MOTOR_1_ENABLE, i);
-
-        display.clearDisplay();
-        display.setTextSize(1);
-        display.setTextColor(WHITE);
-        display.setCursor(0, 10);
-        display.println("Rev Motor 1: ");
-        display.setTextSize(2);
-        display.println(i);
-        display.display();
-        delay(20);
-    }
-
-    digitalWrite(MOTOR_1_PIN_1, LOW);
-    digitalWrite(MOTOR_1_PIN_2, LOW);
-    // Motor 2 test
-    digitalWrite(MOTOR_2_PIN_1, HIGH);
-    digitalWrite(MOTOR_2_PIN_2, LOW);
-
-    for (int i = 0; i < 150; i++) {
-        ledcWrite(MOTOR_2_ENABLE, i);
-
-        display.clearDisplay();
-        display.setTextSize(1);
-        display.setTextColor(WHITE);
-        display.setCursor(0, 10);
-        display.println("Motor 2: ");
-        display.setTextSize(2);
-        display.println(i);
-        display.display();
-        delay(20);
-    }
-
-    digitalWrite(MOTOR_2_PIN_1, LOW);
-    digitalWrite(MOTOR_2_PIN_2, HIGH);
-
-    for (int i = 0; i < 150; i++) {
-        ledcWrite(MOTOR_2_ENABLE, i);
-
-        display.clearDisplay();
-        display.setTextSize(1);
-        display.setTextColor(WHITE);
-        display.setCursor(0, 10);
-        display.println("Rev Motor 2: ");
-        display.setTextSize(2);
-        display.println(i);
-        display.display();
-        delay(20);
-    }
-
-    digitalWrite(MOTOR_2_PIN_1, LOW);
-    digitalWrite(MOTOR_2_PIN_2, LOW);
-
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
-    display.setCursor(0, 10);
-    display.println("Motor testing complete!");
-    display.println("Connect Controller.");
-    display.display();
-}  
 
 
 // Arduino loop function. Runs in CPU 1.
