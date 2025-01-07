@@ -3,42 +3,33 @@
 
 #include "motor.h"
 
-void motorControlTest() {
-    // Motor 1 test
-    digitalWrite(MOTOR_1_PIN_11, HIGH);
-    digitalWrite(MOTOR_1_PIN_21, LOW);
+void Motor::forward(int percent) {
+    digitalWrite(pin_1, HIGH);
+    digitalWrite(pin_2, LOW);
+    ledcWrite(pwm_pin, percent);
+}
 
+void Motor::reverse(int percent) {
+    digitalWrite(pin_1, LOW);
+    digitalWrite(pin_2, HIGH);
+    ledcWrite(pwm_pin, percent);
+}
+
+void Motor::stop() {
+    digitalWrite(pin_1, LOW);
+    digitalWrite(pin_2, LOW);
+    ledcWrite(pwm_pin, 0);
+}
+
+void Motor::test() {
     for (int i = 0; i < 150; i++) {
-        ledcWrite(MOTOR_1_ENABLE1, i);
+        this->forward(i);
         delay(20);
     }
-    digitalWrite(MOTOR_1_PIN_11, LOW);
-    digitalWrite(MOTOR_1_PIN_21, HIGH);
-
+    this->stop();
     for (int i = 0; i < 150; i++) {
-        ledcWrite(MOTOR_1_ENABLE1, i);
+        this->reverse(i);
         delay(20);
     }
-
-    digitalWrite(MOTOR_1_PIN_11, LOW);
-    digitalWrite(MOTOR_1_PIN_21, LOW);
-    // Motor 2 test
-    digitalWrite(MOTOR_2_PIN_11, HIGH);
-    digitalWrite(MOTOR_2_PIN_21, LOW);
-
-    for (int i = 0; i < 150; i++) {
-        ledcWrite(MOTOR_2_ENABLE1, i);
-        delay(20);
-    }
-
-    digitalWrite(MOTOR_2_PIN_11, LOW);
-    digitalWrite(MOTOR_2_PIN_21, HIGH);
-
-    for (int i = 0; i < 150; i++) {
-        ledcWrite(MOTOR_2_ENABLE1, i);
-        delay(20);
-    }
-
-    digitalWrite(MOTOR_2_PIN_11, LOW);
-    digitalWrite(MOTOR_2_PIN_21, LOW);
-}  
+    this->stop();
+}
