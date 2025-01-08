@@ -2,6 +2,7 @@ set(srcs
         "main.c"
         "sketch.cpp"
         "motor.cpp"
+        "accelerometer.cpp"
     )
 
 set(requires 
@@ -12,6 +13,8 @@ set(requires
         "Adafruit_SSD1306" 
         "Adafruit-GFX-Library" 
         "Adafruit_BusIO"
+        "Adafruit_MPU6050"
+        "Adafruit_Sensor"
     )
 
 idf_component_register(SRCS "${srcs}"

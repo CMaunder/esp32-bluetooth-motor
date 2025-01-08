@@ -3,11 +3,13 @@
 #include <Bluepad32.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Adafruit_Sensor.h>
 #include <Wire.h>
 #include <math.h>
 #include <iostream>
 #include <string>
 #include "motor.h"
+#include "accelerometer.h"
 
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
@@ -17,8 +19,12 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 ControllerPtr myControllers[BP32_MAX_GAMEPADS];
 
+Accelerometer accelerometer;
+
 Motor motor_a {27, 26, 14, 0};
 Motor motor_b {33, 32, 25, 1};
+
+sensors_event_t a, g, temp;
 
 void displayGamepad(ControllerPtr ctl) {
     double axis_to_percent {5.12};
@@ -48,13 +54,13 @@ void displayGamepad(ControllerPtr ctl) {
     display.print((pow(y_axis, 2)) / 39.25);
 
     display.display();
-
+    double motor_percent = (pow(y_axis, 2)) / 39.25;
     if (y_axis > 0) {
-        motor_a.forward((pow(y_axis, 2)) / 39.25);
-        motor_b.forward((pow(y_axis, 2)) / 39.25);
+        motor_a.forward(motor_percent);
+        motor_b.forward(motor_percent);
     } else if (y_axis < 0) {
-        motor_a.reverse((pow(y_axis, 2)) / 39.25);
-        motor_b.reverse((pow(y_axis, 2)) / 39.25);
+        motor_a.reverse(motor_percent);
+        motor_b.reverse(motor_percent);
     } else if (y_axis == 0) {
         motor_a.stop();
         motor_b.stop();
@@ -195,6 +201,8 @@ void processControllers() {
 
 // Arduino setup function. Runs in CPU 1
 void setup() {
+    accelerometer.initialise_accel();
+    
     Serial.begin(115200);
     // motor_a.test();
     // motor_b.test();
@@ -242,11 +250,34 @@ void setup() {
 
 // Arduino loop function. Runs in CPU 1.
 void loop() {
+    // accelerometer.print();
+    Serial.print("Acceleration X: ");
+
+    accelerometer.update(&a, &g, &temp);
+
+    display.clearDisplay();
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    display.setCursor(0, 10);
+
+    display.print("X: ");
+    display.print(a.acceleration.x);
+    display.print("\n");
+
+    display.print("Y: ");
+    display.print(a.acceleration.y);
+    display.print("\n");
+    display.display();
+
+
     // This call fetches all the controllers' data.
     // Call this function in your main loop.
     bool dataUpdated = BP32.update();
     if (dataUpdated)
         processControllers();
+
+
+
 
     // The main loop must have some kind of "yield to lower priority task" event.
     // Otherwise, the watchdog will get triggered.
